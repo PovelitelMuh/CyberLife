@@ -1,0 +1,19 @@
+fn thread_body( $thread_id, $user_data )
+{
+s = ""
+num_to_str(s,$thread_id )
+  print( s  , 0 , $user_data * 10, RED)
+}
+XYITA = thread_create( thread_body, 0 ) //Создаем новый поток
+
+thread_id1 = thread_create( thread_body, 1 ) //Создаем новый поток
+frame(2000)
+thread_id2 = thread_create( thread_body, 2 ) //Создаем новый поток
+frame()
+thread_id3 = thread_create( thread_body, 3 ) //Создаем новый поток
+frame()
+thread_id4 = thread_create( thread_body, 4 ) //Создаем новый поток
+frame()
+
+frame(2000)
+

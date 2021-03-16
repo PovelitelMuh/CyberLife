@@ -1,0 +1,398 @@
+
+/*
+Возможные действия:
+1 - Идти
+2 - Размножиться
+*/
+
+deaths = 0
+
+rand_seed(get_seconds())
+
+//Вспомогательные функции
+
+fn my_frame(){
+	while(1){
+		frame()
+	}
+}
+
+// fn my_log(){
+// 	$s = ""
+// 	$f = fopen("data.txt", "wb")
+// 	$i = 1
+// 	while($i < count){
+// 		$j = 0
+// 		while($j < 12){
+// 			fputs("\n", $f)
+// 			num_to_str($s, bot[$i, $j])
+// 			fputs($s, $f)
+// 		}
+// 	}
+// 	fclose($f)
+// }
+
+fn my_time_log($key){
+	if($key == 1){
+		start_timer(1)
+		ret
+	}else{
+		fbox(WORLD_WIDTH/2 - 15 - get_text_xsize(time_s), WORLD_HEIGHT/2 + 10 - get_text_ysize(time_s)/2, get_text_xsize(time_s), get_text_ysize(time_s), BLACK)
+		num_to_str(time_s, get_timer(1))
+		print(time_s, WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2 + 10, GREEN, RIGHT)
+		ret
+	}
+}
+
+fn org_log(){
+	f = fopen("org_data.txt", "wb")
+	str_log = ""
+	i = 1
+	while(i < count){
+		j = 0
+		while(j < 3){
+			num_to_str(str_log, org[i, j])
+			// strcat(str_log, str_log2)
+			fputs(str_log, f)
+			j = j+1
+		}
+		fputs(" ", f)
+		i = i+1
+	}
+	fputs(str_log, f)
+	fclose(f)
+}
+
+fn bot_log($bot_i){
+	$x_start_log = - WORLD_WIDTH/2
+	$x_step_log = 50
+	$text_col = RED
+	$s = ""
+	// Закраска прошлой надписи
+	fbox($x_start_log, WORLD_HEIGHT/2 + 10 - get_text_ysize($s)/2, 600, get_text_ysize($s) + 10, BLACK)
+	// Индекс бота
+	num_to_str($s, $bot_i)
+	print($s, $x_start_log, WORLD_HEIGHT/2 + 20, $text_col, LEFT)
+	// СОстояние бота
+	num_to_str($s, bot[$bot_i, 0])
+	print($s, $x_start_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// Х координата бота
+	num_to_str($s, bot[$bot_i, 1])
+	print($s, $x_start_log + $x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// У координаат
+	num_to_str($s, bot[$bot_i, 2])
+	print($s, $x_start_log + 2*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// Энергия
+	num_to_str($s, bot[$bot_i, 3])
+	print($s, $x_start_log + 3*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// Напрвление 1-го действия
+	num_to_str($s, bot[$bot_i, 4])
+	print($s, $x_start_log + 4*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// 1-е действие
+	num_to_str($s, bot[$bot_i, 5])
+	print($s, $x_start_log + 5*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// Напрвление 2-го действия
+	num_to_str($s, bot[$bot_i, 6])
+	print($s, $x_start_log + 6*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// 2-е действие
+	num_to_str($s, bot[$bot_i, 7])
+	print($s, $x_start_log + 7*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// Напрвление 3-го действия
+	num_to_str($s, bot[$bot_i, 8])
+	print($s, $x_start_log + 8*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// 3-е действие
+	num_to_str($s, bot[$bot_i, 9])
+	print($s, $x_start_log + 9*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// Напрвление 4-го действия
+	num_to_str($s, bot[$bot_i, 10])
+	print($s, $x_start_log + 10*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	// 4-е действие
+	num_to_str($s, bot[$bot_i, 11])
+	print($s, $x_start_log + 11*$x_step_log, WORLD_HEIGHT/2 + 10, $text_col, LEFT)
+	//frame(1, -300, WORLD_HEIGHT/2 + 10 - get_text_ysize($s)/2, 600, get_text_ysize($s))
+}
+
+fn is_bot($bot_i){
+	ret(bot[$bot_i, 0]) // Есть ли бот с таким номером? 1 - есть, 0 - нет
+}
+
+fn is_org($org_i){
+	ret(org[$org_i, 0]) // Есть ли органика с таким номером? 1 - есть, 0 - нет
+}
+
+// fn wtf($X_DIR, $Y_DIR){
+// 	$i = 1
+// 	if(bot[$i, 1] == $X_DIR && bot[$i, 2] == $Y_DIR){
+// 		ret
+// 	} // 1 - бот
+
+// }
+
+fn sig($c){
+	if($c == 0){
+		fbox(WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2, 15, 15, YELLOW)
+		box(WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2, 15, 15, GREEN)
+	}
+	if($c == 1){
+		fbox(WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2, 15, 15, RED)
+		box(WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2, 15, 15, GREEN)
+	}
+	//frame(1, WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2, 15, 15)
+}
+
+fn full($X_DIR, $Y_DIR){ //Проверка свободно ли 0 - свободно, 1 - занято
+	$i = 1
+	while($i < count){
+		if(($X_DIR < - WORLD_WIDTH/2) || ($X_DIR > WORLD_WIDTH/2 - SIZE) || ($Y_DIR < - WORLD_HEIGHT/2) || ($Y_DIR > WORLD_HEIGHT/2 - SIZE)){
+			ret(1)
+		}
+		if((bot[$i, 0] == 1) && (bot[$i, 1] == $X_DIR) && (bot[$i, 2] == $Y_DIR)){
+			ret(1)
+		}
+		if((org[$i, 0] == 1) && (org[$i, 1] == $X_DIR) && (org[$i, 2] == $Y_DIR)){
+			ret(1)
+		}
+		$i = $i+1
+	}
+	ret(0)
+}
+
+fn dir($bot_i, $d){
+	if($d == 1){
+		X_DIR = bot[$bot_i, 1] - SIZE
+		Y_DIR = bot[$bot_i, 2] - SIZE
+		ret
+	}
+	if($d == 2){
+		X_DIR = bot[$bot_i, 1]
+		Y_DIR = bot[$bot_i, 2] - SIZE
+		ret
+	}
+	if($d == 3){
+		X_DIR = bot[$bot_i, 1] + SIZE
+		Y_DIR = bot[$bot_i, 2] - SIZE
+		ret
+	}
+	if($d == 4){
+		X_DIR = bot[$bot_i, 1] + SIZE
+		Y_DIR = bot[$bot_i, 2]
+		ret
+	}
+	if($d == 5){
+		X_DIR = bot[$bot_i, 1] + SIZE
+		Y_DIR = bot[$bot_i, 2] + SIZE
+		ret
+	}
+	if($d == 6){
+		X_DIR = bot[$bot_i, 1]
+		Y_DIR = bot[$bot_i, 2] + SIZE
+		ret
+	}
+	if($d == 7){
+		X_DIR = bot[$bot_i, 1] - SIZE
+		Y_DIR = bot[$bot_i, 2] + SIZE
+		ret
+	}
+	if($d == 8){
+		X_DIR = bot[$bot_i, 1] - SIZE
+		Y_DIR = bot[$bot_i, 2]
+		ret
+	}
+}
+
+fn act($bot_i, $d, $a){
+	dir($bot_i, $d)
+	if($a == 1){
+		move($bot_i, X_DIR, Y_DIR)
+	}
+	if($a == 2){
+		chld($bot_i, X_DIR, Y_DIR)
+	}
+	ret
+}
+
+fn mut_dir($dir){
+	if((rand()%100 + 1) <= mut_ch){
+		//again_dir:
+			$key = rand()%8 + 1
+			// if($key < 1 || $key > 8){
+			// 	sig(0)
+			// 	goto again_dir
+			// }
+			ret($key)
+	}else{
+		ret($dir)
+	}
+}
+
+fn mut_act($act){
+	if((rand()%100 + 1) <= mut_ch){
+		//again_act:
+			$key = rand()%act_count + 1
+			// if($key < 1 || $key > act_count){
+			// 	sig(1)
+			// 	goto again_act
+			// }
+			ret($key)
+	}else{
+		ret($act)
+	}
+}
+
+//Основные функции
+
+fn spawn($X_spawn_, $Y_spawn_){
+	$X_spawn = $X_spawn_ * SIZE
+	$Y_spawn = $Y_spawn_ * SIZE
+	if(full($X_spawn, $Y_spawn) == 1){ //Проверка свободно ли
+		ret
+	}
+	i = 1
+	while(bot[i, 0] != 0){
+		i = i+1
+		if(i == count){
+			ret
+		}
+	}
+	bot[i, 0] = 1
+	bot[i, 1] = $X_spawn
+	bot[i, 2] = $Y_spawn
+	bot[i, 3] = start_eng
+	bot[i, 4] = rand()%8 + 1
+	bot[i, 5] = rand()%act_count + 1
+	bot[i, 6] = rand()%8 + 1
+	bot[i, 7] = rand()%act_count + 1
+	bot[i, 8] = rand()%8 + 1
+	bot[i, 9] = rand()%act_count + 1
+	bot[i, 10] = rand()%8 + 1
+	bot[i, 11] = rand()%act_count + 1
+	// bot[i, 12] = rand()%8 + 1
+	// bot[i, 13] = rand()%act_count + 1
+	// bot[i, 14] = rand()%8 + 1
+	// bot[i, 15] = rand()%act_count + 1
+	// bot[i, 16] = rand()%8 + 1
+	// bot[i, 17] = rand()%act_count + 1
+	// bot[i, 18] = rand()%8 + 1
+	// bot[i, 19] = rand()%act_count + 1
+	fbox($X_spawn, $Y_spawn, SIZE, SIZE, bot_col)
+	box($X_spawn, $Y_spawn, SIZE, SIZE, bot_bor_col)
+	bot_alive = bot_alive+1
+}
+
+fn move($bot_i, $X_DIR, $Y_DIR){
+	if(full($X_DIR, $Y_DIR) == 1){
+		bot[$bot_i, 3] = bot[$bot_i, 3] - afk_eng
+		if(energy){
+			fbox(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_col) //Закрашиваем старое место
+			box(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_bor_col)
+			num_to_str(s, bot[$bot_i, en_kind])
+			print(s, bot[$bot_i, 1] + SIZE/2, bot[$bot_i, 2] + SIZE/2, RED)
+		}
+		ret
+	}
+	fbox(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, back_col) //Закрашиваем старое место
+	box(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, back_col) //Закрашиваем старое место
+	bot[$bot_i, 1] = $X_DIR
+	bot[$bot_i, 2] = $Y_DIR // Переместили бота
+
+	fbox(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_col) //Закрашиваем новое место
+	box(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_bor_col) //Закрашиваем новое место
+
+	bot[$bot_i, 3] = bot[$bot_i, 3] - act_eng
+	if(energy){
+		num_to_str(s, bot[$bot_i, en_kind])
+		print(s, bot[$bot_i, 1] + SIZE/2, bot[$bot_i, 2] + SIZE/2, RED)
+	}
+}
+
+fn chld($bot_i, $X_DIR, $Y_DIR){
+	// Бот может выполнить действие?
+	if(full($X_DIR, $Y_DIR) == 1){
+		bot[$bot_i, 3] = bot[$bot_i, 3] - afk_eng
+		if(energy){
+			fbox(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_col)
+			box(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_bor_col)
+			num_to_str(s, bot[$bot_i, en_kind])
+			print(s, bot[$bot_i, 1] + SIZE/2, bot[$bot_i, 2] + SIZE/2, RED)
+		}
+		ret
+	}
+	// Бот может выполнить действие.
+	// Есть свободные места?
+	i = 1
+	while(bot[i, 0] != 0){
+		i = i+1
+		if(i == count){
+			// Мест нет
+			bot[$bot_i, 3] = bot[$bot_i, 3] - afk_eng
+			if(energy){
+				fbox(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_col)
+				box(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_bor_col)
+				num_to_str(s, bot[$bot_i, en_kind])
+				print(s, bot[$bot_i, 1] + SIZE/2, bot[$bot_i, 2] + SIZE/2, RED)
+			}
+			ret
+		}
+	}
+	// Есть свободные места и определено место для новго бота
+	// Рожаем
+	bot[i, 0] = 1
+	bot[i, 1] = $X_DIR
+	bot[i, 2] = $Y_DIR
+	bot[i, 3] = start_eng
+	bot[i, 4] = mut_dir(bot[$bot_i, 4])
+	bot[i, 5] = mut_act(bot[$bot_i, 5])
+	bot[i, 6] = mut_dir(bot[$bot_i, 6])
+	bot[i, 7] = mut_act(bot[$bot_i, 7])
+	bot[i, 8] = mut_dir(bot[$bot_i, 8])
+	bot[i, 9] = mut_act(bot[$bot_i, 9])
+	bot[i, 10] = mut_dir(bot[$bot_i, 10])
+	bot[i, 11] = mut_act(bot[$bot_i, 11])
+	// bot[i, 12] = mut_dir(bot[$bot_i, 12])
+	// bot[i, 13] = mut_act(bot[$bot_i, 13])
+	// bot[i, 14] = mut_dir(bot[$bot_i, 14])
+	// bot[i, 15] = mut_act(bot[$bot_i, 15])
+	// bot[i, 16] = mut_dir(bot[$bot_i, 16])
+	// bot[i, 17] = mut_act(bot[$bot_i, 17])
+	// bot[i, 18] = mut_dir(bot[$bot_i, 18])
+	// bot[i, 19] = mut_act(bot[$bot_i, 19])
+	fbox($X_DIR, $Y_DIR, SIZE, SIZE, bot_col)
+	box($X_DIR, $Y_DIR, SIZE, SIZE, bot_bor_col)
+	bot_alive = bot_alive+1
+	// Создали нового бота
+	
+	bot[$bot_i, 3] = bot[$bot_i, 3] - act_eng // Отняли у бота-родителя энергию
+	fbox(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_col)
+	box(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_bor_col) // Закрасили бота-родителя
+
+	if(energy){
+		num_to_str(s, bot[$bot_i, en_kind])
+		print(s, bot[$bot_i, 1] + SIZE/2, bot[$bot_i, 2] + SIZE/2, RED) // Вывели энергию бота-родителя
+		
+		num_to_str(s, bot[i, 3])
+		print(s, bot[i, 1] + SIZE/2, bot[i, 2] + SIZE/2, RED) // Вывели энергию бота-ребёнка
+	}
+}
+
+fn death($bot_i){
+	i = 1
+	while(is_org(i)){
+		i = i+1
+	}
+	org[i, 0] = 1
+	org[i, 1] = bot[$bot_i, 1]
+	org[i, 2] = bot[$bot_i, 2]
+
+	fbox(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, org_col)
+	box(bot[$bot_i, 1], bot[$bot_i, 2], SIZE, SIZE, bot_bor_col)
+
+	$j = 0
+	while($j < 12){
+		bot[$bot_i, $j] = 0
+		$j = $j+1
+	}
+
+	bot_alive = bot_alive-1
+	deaths = deaths+1
+	ret
+}

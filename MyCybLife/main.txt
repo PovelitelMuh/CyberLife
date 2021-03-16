@@ -1,0 +1,109 @@
+
+include "functions.txt"
+//Настройки
+SIZE = 20
+WORLD_WIDTH = 1000
+WORLD_HEIGHT = 700
+mut_ch = 80
+act_count = 2
+
+back_col = #ADD8E6
+bot_col = YELLOW
+bot_bor_col = back_col
+org_col = #8FBC8F
+
+start_eng = 100
+act_eng = 10
+afk_eng = 50
+energy = 0
+en_kind = 0 // Что выводить?
+
+count = (WORLD_HEIGHT/SIZE)*(WORLD_WIDTH/SIZE)
+
+bot = new(count, 20)
+clean(bot, 0)
+/*
+0 - Состояние бота: 1 - жив, 0 - мёртв
+1 - X координата
+2 - Y координата
+3 - Энергия
+4 - Направление 1-го действия
+5 - 1-е действие
+6 - Направление 2-го действия
+7 - 2-е действие
+8 - Направление 3-го действия
+9 - 3-е действие
+10 - Направление 4-го действия
+11 - 4-е действие
+*/
+org = new(count, 1)
+clean(org, 0)
+/*
+0 - Состояние: 1 - есть, 2 - нет
+1 - X координата
+2 - Y координата
+*/
+
+// Настроечные переменные
+bot_i = 1
+com_num = 4
+s = ""
+time_s = ""
+bot_act = ""
+bot_alive = 0
+step = 0
+
+// Рисуем игровое поле
+fbox (- WORLD_WIDTH/2, - WORLD_HEIGHT/2, WORLD_WIDTH, WORLD_HEIGHT, back_col)
+box (- WORLD_WIDTH/2, - WORLD_HEIGHT/2, WORLD_WIDTH, WORLD_HEIGHT, GREEN)
+
+// Рисуем индикатор
+fbox(WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2, 15, 15, GREEN)
+box(WORLD_WIDTH/2 - 15, WORLD_HEIGHT/2, 15, 15, GREEN)
+
+// Рисуем интерфейс
+sprintf(s, "/%d", count)
+print(s, WORLD_WIDTH/2 - 120, WORLD_HEIGHT/2 + 10, bot_col, LEFT)
+
+// Начало жизни
+spawn(1,1)
+spawn(-1,-1)
+frame()
+frame_id = thread_create(my_frame, 1)
+my_time_log(1)
+while(1){
+	fbox(WORLD_WIDTH/2 - 170 - get_text_xsize(s)/2, WORLD_HEIGHT/2 + 10 - get_text_ysize(s)/2, get_text_xsize(s), get_text_ysize(s), BLACK)
+	num_to_str(s, bot_alive)
+	print(s, WORLD_WIDTH/2 - 170, WORLD_HEIGHT/2 + 10, bot_col)
+
+	fbox(WORLD_WIDTH/2 - 250, WORLD_HEIGHT/2 + 10 - get_text_ysize(bot_act)/2, get_text_xsize(bot_act), get_text_ysize(bot_act), BLACK)
+	num_to_str(bot_act, step)
+	print(bot_act, WORLD_WIDTH/2 - 250, WORLD_HEIGHT/2 + 10, RED, LEFT)
+
+	// Начало хода бота bot_n
+	if(is_bot(bot_i) == 1){
+		bot_log(bot_i)
+		while(com_num < 12){
+			act(bot_i, bot[bot_i, com_num], bot[bot_i, com_num+1])
+			com_num = com_num+2
+			if(bot[bot_i, 3] <= 0){
+				death(bot_i)
+				break
+			}
+		} // Конец действия бота bot_n
+		com_num = 4
+		bot_i = bot_i+1
+		step = step+1
+	}else{
+		bot_i = bot_i+1
+	} // Конец хода бота bot_n
+
+	if(bot_i >= count){
+		bot_i = 1
+		my_time_log(2)
+		my_time_log(1)
+	}
+	if(deaths == 1){
+		org_log()
+	}
+}
